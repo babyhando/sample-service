@@ -5,6 +5,7 @@ import (
 	"log"
 	"os"
 	"service/config"
+	"service/service"
 
 	http_server "service/api/http"
 )
@@ -14,7 +15,12 @@ var configPath = flag.String("config", "", "configuration path")
 func main() {
 	cfg := readConfig()
 
-	http_server.Run(cfg.Server)
+	app, err := service.NewAppContainer(cfg)
+	if err != nil {
+		log.Fatal(err)
+	}
+
+	http_server.Run(cfg.Server, app)
 }
 
 func readConfig() config.Config {
