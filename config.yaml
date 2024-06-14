@@ -1,3 +1,12 @@
 server:
   http_port: 2244
   host: "0.0.0.0"
+  token_exp_minutes: 1440
+  refresh_token_exp_minute: 2880 
+  token_secret: "P@$$%Secret6677"
+db:
+  user: "root"
+  pass: "123456"
+  host : "localhost"
+  port: 3322
+  db_name: "quera"

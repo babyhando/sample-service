@@ -1,10 +1,10 @@
 package user
 
 import (
-	"bytes"
 	"context"
 	"crypto/sha256"
 	"errors"
+	"fmt"
 )
 
 type Repo interface {
@@ -50,6 +50,8 @@ func (u *User) ValidatePassword() error {
 }
 
 func (u *User) PasswordIsValid(pass string) bool {
-	passSha256 := sha256.Sum256([]byte(pass))
-	return bytes.Equal(passSha256[:], []byte(u.Password))
+	h := sha256.New()
+	h.Write([]byte(pass))
+	passSha256 := h.Sum(nil)
+	return fmt.Sprintf("%x", passSha256) == u.Password
 }

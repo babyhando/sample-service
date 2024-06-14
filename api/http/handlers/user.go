@@ -6,8 +6,26 @@ import (
 	"github.com/gofiber/fiber/v2"
 )
 
-func CreateUserHandler(service *service.UserService) fiber.Handler {
+func LoginUser(authService *service.AuthService) fiber.Handler {
 	return func(c *fiber.Ctx) error {
-		return nil
+		var input struct {
+			Email    string `json:"email"`
+			Password string `json:"password"`
+		}
+
+		if err := c.BodyParser(&input); err != nil {
+			return err // todo
+		}
+
+		authToken, err := authService.Login(c.Context(), input.Email, input.Password)
+		if err != nil {
+			return err
+		}
+
+		return c.JSON(map[string]any{
+			"auth":    authToken.AuthorizationToken,
+			"refresh": authToken.RefreshToken,
+			"exp":     authToken.ExpiresAt,
+		})
 	}
 }

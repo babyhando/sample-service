@@ -40,8 +40,8 @@ func (s *AuthService) Login(ctx context.Context, email, pass string) (*UserToken
 
 	// calc expiration time values
 	var (
-		authExp    = time.Now().Add(time.Second * time.Duration(s.tokenExpiration))
-		refreshExp = time.Now().Add(time.Second * time.Duration(s.refreshTokenExpiration))
+		authExp    = time.Now().Add(time.Minute * time.Duration(s.tokenExpiration))
+		refreshExp = time.Now().Add(time.Minute * time.Duration(s.refreshTokenExpiration))
 	)
 
 	authToken, err := jwt.CreateToken(s.secret, s.userClaims(user, authExp))

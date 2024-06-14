@@ -1,8 +1,8 @@
 package config
 
 type Config struct {
-	Version string `mapstructure:"version"`
-	Server  Server `mapstructure:"server"`
+	Server Server `mapstructure:"server"`
+	DB     DB     `mapstructure:"db"`
 }
 
 type Server struct {
@@ -10,4 +10,13 @@ type Server struct {
 	Host                   string `mapstructure:"host"`
 	TokenExpMinutes        uint   `mapstructure:"token_exp_minutes"`
 	RefreshTokenExpMinutes uint   `mapstructure:"refresh_token_exp_minute"`
+	TokenSecret            string `mapstructure:"token_secret"`
+}
+
+type DB struct {
+	User   string `mapstructure:"user"`
+	Pass   string `mapstructure:"pass"`
+	Host   string `mapstructure:"host"`
+	Port   int    `mapstructure:"port"`
+	DBName string `mapstructure:"db_name"`
 }

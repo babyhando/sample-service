@@ -12,9 +12,10 @@ import (
 
 func Run(cfg config.Server, app *service.AppContainer) {
 	fiberApp := fiber.New()
+	api := fiberApp.Group("/api/v1")
 
-	// registering global middlewares
-	registerMiddlewares(fiberApp)
+	// register global routes
+	registerGlobalRoutes(api, app)
 
 	// registering users APIs
 	registerUsersAPI(fiberApp, app.UserService())
@@ -23,12 +24,10 @@ func Run(cfg config.Server, app *service.AppContainer) {
 	log.Fatal(fiberApp.Listen(fmt.Sprintf("%s:%d", cfg.Host, cfg.HttpPort)))
 }
 
-func registerMiddlewares(fiberApp *fiber.App) {
-
+func registerUsersAPI(router fiber.Router, userService *service.UserService) {
+	// userGroup := fiberApp.Group("/users")
 }
 
-func registerUsersAPI(fiberApp *fiber.App, userService *service.UserService) {
-	userGroup := fiberApp.Group("/users")
-
-	userGroup.Post("", handlers.CreateUserHandler(userService)) // todo
+func registerGlobalRoutes(router fiber.Router, app *service.AppContainer) {
+	router.Post("/login", handlers.LoginUser(app.AuthService()))
 }
