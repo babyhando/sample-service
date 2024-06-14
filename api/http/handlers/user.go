@@ -14,12 +14,12 @@ func LoginUser(authService *service.AuthService) fiber.Handler {
 		}
 
 		if err := c.BodyParser(&input); err != nil {
-			return sendError(c, err, fiber.StatusBadRequest)
+			return SendError(c, err, fiber.StatusBadRequest)
 		}
 
 		authToken, err := authService.Login(c.Context(), input.Email, input.Password)
 		if err != nil {
-			return sendError(c, err, fiber.StatusBadRequest)
+			return SendError(c, err, fiber.StatusBadRequest)
 		}
 
 		return c.JSON(map[string]any{

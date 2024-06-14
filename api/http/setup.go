@@ -4,7 +4,9 @@ import (
 	"fmt"
 	"log"
 	"service/api/http/handlers"
+	"service/api/http/middlerwares"
 	"service/config"
+	"service/pkg/jwt"
 	"service/service"
 
 	"github.com/gofiber/fiber/v2"
@@ -18,14 +20,23 @@ func Run(cfg config.Server, app *service.AppContainer) {
 	registerGlobalRoutes(api, app)
 
 	// registering users APIs
-	registerUsersAPI(fiberApp, app.UserService())
+	registerUsersAPI(api, app.UserService(), []byte(cfg.TokenSecret))
 
 	// run server
 	log.Fatal(fiberApp.Listen(fmt.Sprintf("%s:%d", cfg.Host, cfg.HttpPort)))
 }
 
-func registerUsersAPI(router fiber.Router, userService *service.UserService) {
-	// userGroup := fiberApp.Group("/users")
+func registerUsersAPI(router fiber.Router, _ *service.UserService, secret []byte) {
+	userGroup := router.Group("/users", middlerwares.Auth(secret), middlerwares.RoleChecker("user", "admin"))
+
+	userGroup.Get("/folan", func(c *fiber.Ctx) error {
+		claims := c.Locals(jwt.UserClaimKey).(*jwt.UserClaims)
+
+		return c.JSON(map[string]any{
+			"user_id": claims.UserID,
+			"role":    claims.Role,
+		})
+	})
 }
 
 func registerGlobalRoutes(router fiber.Router, app *service.AppContainer) {
