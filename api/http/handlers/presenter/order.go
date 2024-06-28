@@ -3,6 +3,7 @@ package presenter
 import (
 	"service/internal/order"
 	"service/pkg/fp"
+	"time"
 )
 
 type UserOrder struct {
@@ -25,4 +26,14 @@ func OrderToUserOrder(o order.Order) UserOrder {
 
 func OrdersToUserOrders(orders []order.Order) []UserOrder {
 	return fp.Map(orders, OrderToUserOrder)
+}
+
+func UserOrderToOrder(userOrder *UserOrder, userID uint) *order.Order {
+	return &order.Order{
+		CreatedAt:     time.Time(userOrder.CreatedAt),
+		TotalPrice:    userOrder.TotalPrice,
+		TotalQuantity: userOrder.TotalQuantity,
+		Description:   userOrder.Description,
+		UserID:        userID,
+	}
 }

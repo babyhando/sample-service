@@ -30,3 +30,16 @@ func (s *OrderService) GetUserOrders(ctx context.Context, userID uint, page, pag
 
 	return s.orderOps.UserOrders(ctx, userID, page, pageSize)
 }
+
+func (s *OrderService) CreateOrder(ctx context.Context, o *order.Order) error {
+	user, err := s.userOps.GetUserByID(ctx, o.UserID)
+	if err != nil {
+		return err
+	}
+
+	if user == nil {
+		return u.ErrUserNotFound
+	}
+
+	return s.orderOps.Create(ctx, o)
+}

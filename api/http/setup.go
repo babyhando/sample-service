@@ -51,5 +51,10 @@ func registerGlobalRoutes(router fiber.Router, app *service.AppContainer) {
 func registerOrderRoutes(router fiber.Router, orderService *service.OrderService, secret []byte) {
 	router = router.Group("/orders")
 
-	router.Get("", middlerwares.Auth(secret), middlerwares.RoleChecker("user"), handlers.UserOrders(orderService))
+	router.Get("", middlerwares.Auth(secret), userRoleChecker(), handlers.UserOrders(orderService))
+	router.Post("", middlerwares.Auth(secret), userRoleChecker(), handlers.CreateUserOrder(orderService))
+}
+
+func userRoleChecker() fiber.Handler {
+	return middlerwares.RoleChecker("user")
 }

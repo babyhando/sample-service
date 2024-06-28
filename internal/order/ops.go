@@ -1,6 +1,9 @@
 package order
 
-import "context"
+import (
+	"context"
+	"time"
+)
 
 type Ops struct {
 	repo Repo
@@ -15,4 +18,16 @@ func (o *Ops) UserOrders(ctx context.Context, userID uint, page, pageSize uint) 
 	offset := (page - 1) * pageSize
 
 	return o.repo.GetUserOrders(ctx, userID, limit, offset)
+}
+
+func (o *Ops) Create(ctx context.Context, order *Order) error {
+	if order.TotalPrice < order.TotalQuantity {
+		return ErrQuantityGreater
+	}
+
+	if order.CreatedAt.After(time.Now()) {
+		return ErrWrongOrderTime
+	}
+
+	return o.repo.Insert(ctx, order)
 }

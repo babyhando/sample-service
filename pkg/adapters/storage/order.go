@@ -46,3 +46,14 @@ func (r *orderRepo) GetUserOrders(ctx context.Context, userID uint, limit, offse
 
 	return mappers.OrderEntitiesToDomain(orders), uint(total), nil
 }
+
+func (r *orderRepo) Insert(ctx context.Context, o *order.Order) error {
+	orderEntity := mappers.OrderDomainToEntity(o)
+	if err := r.db.WithContext(ctx).Save(&orderEntity).Error; err != nil {
+		return err
+	}
+
+	o.ID = orderEntity.ID
+
+	return nil
+}
