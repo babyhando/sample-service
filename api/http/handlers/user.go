@@ -1,6 +1,7 @@
 package handlers
 
 import (
+	"errors"
 	"service/service"
 
 	"github.com/gofiber/fiber/v2"
@@ -22,10 +23,22 @@ func LoginUser(authService *service.AuthService) fiber.Handler {
 			return SendError(c, err, fiber.StatusBadRequest)
 		}
 
-		return c.JSON(map[string]any{
-			"auth":    authToken.AuthorizationToken,
-			"refresh": authToken.RefreshToken,
-			"exp":     authToken.ExpiresAt,
-		})
+		return SendUserToken(c, authToken)
+	}
+}
+
+func RefreshCreds(authService *service.AuthService) fiber.Handler {
+	return func(c *fiber.Ctx) error {
+		refToken := c.GetReqHeaders()["Authorization"]
+		if len(refToken[0]) == 0 {
+			return SendError(c, errors.New("token should be provided"), fiber.StatusBadRequest)
+		}
+
+		authToken, err := authService.RefreshAuth(c.UserContext(), refToken[0])
+		if err != nil {
+			return SendError(c, err, fiber.StatusUnauthorized)
+		}
+
+		return SendUserToken(c, authToken)
 	}
 }

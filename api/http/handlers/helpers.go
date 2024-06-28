@@ -3,6 +3,7 @@ package handlers
 import (
 	"errors"
 	"service/pkg/jwt"
+	"service/service"
 
 	"github.com/gofiber/fiber/v2"
 )
@@ -19,6 +20,14 @@ func SendError(c *fiber.Ctx, err error, status int) error {
 	}
 	return c.Status(status).JSON(map[string]any{
 		"error_msg": err.Error(),
+	})
+}
+
+func SendUserToken(c *fiber.Ctx, authToken *service.UserToken) error {
+	return c.JSON(map[string]any{
+		"auth":    authToken.AuthorizationToken,
+		"refresh": authToken.RefreshToken,
+		"exp":     authToken.ExpiresAt,
 	})
 }
 

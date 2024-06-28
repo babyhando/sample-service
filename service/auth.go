@@ -61,6 +61,38 @@ func (s *AuthService) Login(ctx context.Context, email, pass string) (*UserToken
 	}, nil
 }
 
+func (s *AuthService) RefreshAuth(ctx context.Context, refreshToken string) (*UserToken, error) {
+	claim, err := jwt.ParseToken(refreshToken, s.secret)
+	if err != nil {
+		return nil, err
+	}
+
+	u, err := s.userOps.GetUserByID(ctx, claim.UserID)
+	if err != nil {
+		return nil, err
+	}
+
+	if u == nil {
+		return nil, user.ErrUserNotFound
+	}
+
+	// calc expiration time values
+	var (
+		authExp = time.Now().Add(time.Minute * time.Duration(s.tokenExpiration))
+	)
+
+	authToken, err := jwt.CreateToken(s.secret, s.userClaims(u, authExp))
+	if err != nil {
+		return nil, err // todo
+	}
+
+	return &UserToken{
+		AuthorizationToken: authToken,
+		RefreshToken:       refreshToken,
+		ExpiresAt:          authExp.UnixMilli(),
+	}, nil
+}
+
 func (s *AuthService) userClaims(user *user.User, exp time.Time) *jwt.UserClaims {
 	return &jwt.UserClaims{
 		RegisteredClaims: jwt2.RegisteredClaims{

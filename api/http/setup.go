@@ -46,6 +46,7 @@ func registerUsersAPI(router fiber.Router, _ *service.UserService, secret []byte
 
 func registerGlobalRoutes(router fiber.Router, app *service.AppContainer) {
 	router.Post("/login", handlers.LoginUser(app.AuthService()))
+	router.Get("/refresh", handlers.RefreshCreds(app.AuthService()))
 }
 
 func registerOrderRoutes(router fiber.Router, orderService *service.OrderService, secret []byte) {
