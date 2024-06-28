@@ -5,23 +5,23 @@ import (
 )
 
 type multiCommiter struct {
-	commiters []valuecontext.Committer
-	txs       []valuecontext.Committer
+	committers []valuecontext.Committer
+	txs        []valuecontext.Committer
 }
 
-func NewMultiCommiter(commiters []valuecontext.Committer) *multiCommiter {
+func NewMultiCommiter(committers []valuecontext.Committer) *multiCommiter {
 	mc := &multiCommiter{
-		commiters: commiters,
+		committers: committers,
 	}
 
-	txs := make([]valuecontext.Committer, len(commiters))
+	txs := make([]valuecontext.Committer, len(committers))
 	mc.txs = txs
 
 	return mc
 }
 
 func (c *multiCommiter) Begin() valuecontext.Committer {
-	for i, cm := range c.commiters {
+	for i, cm := range c.committers {
 		c.txs[i] = cm.Begin()
 	}
 
