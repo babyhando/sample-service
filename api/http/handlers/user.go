@@ -2,7 +2,9 @@ package handlers
 
 import (
 	"errors"
+	"fmt"
 	"service/service"
+	"time"
 
 	"github.com/gofiber/fiber/v2"
 )
@@ -13,6 +15,13 @@ func LoginUser(authService *service.AuthService) fiber.Handler {
 			Email    string `json:"email"`
 			Password string `json:"password"`
 		}
+
+		c.Cookie(&fiber.Cookie{
+			Name:        "X-Session-ID",
+			Value:       fmt.Sprint(time.Now().UnixNano()),
+			HTTPOnly:    true,
+			SessionOnly: true,
+		})
 
 		if err := c.BodyParser(&input); err != nil {
 			return SendError(c, err, fiber.StatusBadRequest)
