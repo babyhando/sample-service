@@ -18,4 +18,5 @@ func Migrate(db *gorm.DB) {
 	migrator := db.Migrator()
 
 	migrator.AutoMigrate(&entities.User{})
+	migrator.AutoMigrate(&entities.Order{})
 }

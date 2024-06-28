@@ -3,6 +3,7 @@ package service
 import (
 	"log"
 	"service/config"
+	"service/internal/order"
 	"service/internal/user"
 	"service/pkg/adapters/storage"
 
@@ -10,10 +11,11 @@ import (
 )
 
 type AppContainer struct {
-	cfg         config.Config
-	dbConn      *gorm.DB
-	userService *UserService
-	authService *AuthService
+	cfg          config.Config
+	dbConn       *gorm.DB
+	userService  *UserService
+	authService  *AuthService
+	orderService *OrderService
 }
 
 func NewAppContainer(cfg config.Config) (*AppContainer, error) {
@@ -26,12 +28,17 @@ func NewAppContainer(cfg config.Config) (*AppContainer, error) {
 
 	app.setUserService()
 	app.setAuthService()
+	app.setOrderService()
 
 	return app, nil
 }
 
 func (a *AppContainer) UserService() *UserService {
 	return a.userService
+}
+
+func (a *AppContainer) OrderService() *OrderService {
+	return a.orderService
 }
 
 func (a *AppContainer) AuthService() *AuthService {
@@ -43,6 +50,13 @@ func (a *AppContainer) setUserService() {
 		return
 	}
 	a.userService = NewUserService(user.NewOps(storage.NewUserRepo(a.dbConn)))
+}
+
+func (a *AppContainer) setOrderService() {
+	if a.orderService != nil {
+		return
+	}
+	a.orderService = NewOrderService(order.NewOps(storage.NewOrderRepo(a.dbConn)), user.NewOps(storage.NewUserRepo(a.dbConn)))
 }
 
 func (a *AppContainer) mustInitDB() {
