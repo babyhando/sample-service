@@ -6,6 +6,7 @@ import (
 	"service/api/http/handlers"
 	"service/api/http/middlerwares"
 	"service/config"
+	adapter "service/pkg/adapters"
 	"service/pkg/jwt"
 	"service/service"
 
@@ -14,7 +15,7 @@ import (
 
 func Run(cfg config.Server, app *service.AppContainer) {
 	fiberApp := fiber.New()
-	api := fiberApp.Group("/api/v1")
+	api := fiberApp.Group("/api/v1", middlerwares.SetUserContext())
 
 	// register global routes
 	registerGlobalRoutes(api, app)
@@ -25,7 +26,7 @@ func Run(cfg config.Server, app *service.AppContainer) {
 	registerUsersAPI(api, app.UserService(), secret)
 
 	// registering orders APIs
-	registerOrderRoutes(api, app.OrderService(), secret)
+	registerOrderRoutes(api, app, secret)
 
 	// run server
 	log.Fatal(fiberApp.Listen(fmt.Sprintf("%s:%d", cfg.Host, cfg.HttpPort)))
@@ -49,11 +50,16 @@ func registerGlobalRoutes(router fiber.Router, app *service.AppContainer) {
 	router.Get("/refresh", handlers.RefreshCreds(app.AuthService()))
 }
 
-func registerOrderRoutes(router fiber.Router, orderService *service.OrderService, secret []byte) {
+func registerOrderRoutes(router fiber.Router, app *service.AppContainer, secret []byte) {
 	router = router.Group("/orders")
 
-	router.Get("", middlerwares.Auth(secret), userRoleChecker(), handlers.UserOrders(orderService))
-	router.Post("", middlerwares.Auth(secret), userRoleChecker(), handlers.CreateUserOrder(orderService))
+	router.Get("", middlerwares.Auth(secret), userRoleChecker(), handlers.UserOrders(app.OrderService()))
+
+	router.Post("",
+		middlerwares.SetTransaction(adapter.NewGormCommiter(app.RawRBConnection())),
+		middlerwares.Auth(secret),
+		userRoleChecker(),
+		handlers.CreateUserOrder(app.OrderServiceFromCtx))
 }
 
 func userRoleChecker() fiber.Handler {

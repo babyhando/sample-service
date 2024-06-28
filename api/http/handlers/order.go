@@ -38,8 +38,10 @@ func UserOrders(orderService *service.OrderService) fiber.Handler {
 	}
 }
 
-func CreateUserOrder(orderService *service.OrderService) fiber.Handler {
+func CreateUserOrder(serviceFactory ServiceFactory[*service.OrderService]) fiber.Handler {
 	return func(c *fiber.Ctx) error {
+		orderService := serviceFactory(c.UserContext())
+
 		var req presenter.UserOrder
 
 		if err := c.BodyParser(&req); err != nil {

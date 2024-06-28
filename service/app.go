@@ -1,11 +1,13 @@
 package service
 
 import (
+	"context"
 	"log"
 	"service/config"
 	"service/internal/order"
 	"service/internal/user"
 	"service/pkg/adapters/storage"
+	"service/pkg/valuecontext"
 
 	"gorm.io/gorm"
 )
@@ -33,12 +35,33 @@ func NewAppContainer(cfg config.Config) (*AppContainer, error) {
 	return app, nil
 }
 
+func (a *AppContainer) RawRBConnection() *gorm.DB {
+	return a.dbConn
+}
+
 func (a *AppContainer) UserService() *UserService {
 	return a.userService
 }
 
 func (a *AppContainer) OrderService() *OrderService {
 	return a.orderService
+}
+
+func (a *AppContainer) OrderServiceFromCtx(ctx context.Context) *OrderService {
+	tx, ok := valuecontext.TryGetTxFromContext(ctx)
+	if !ok {
+		return a.orderService
+	}
+
+	gc, ok := tx.Tx().(*gorm.DB)
+	if !ok {
+		return a.orderService
+	}
+
+	return NewOrderService(
+		order.NewOps(storage.NewOrderRepo(gc)),
+		user.NewOps(storage.NewUserRepo(gc)),
+	)
 }
 
 func (a *AppContainer) AuthService() *AuthService {
