@@ -41,5 +41,10 @@ func (s *OrderService) CreateOrder(ctx context.Context, o *order.Order) error {
 		return u.ErrUserNotFound
 	}
 
-	return s.orderOps.Create(ctx, o)
+	if err := s.orderOps.Create(ctx, o); err != nil {
+		return err
+	}
+
+	return nil
+	// return errors.New("test error") -> for testing transaction
 }

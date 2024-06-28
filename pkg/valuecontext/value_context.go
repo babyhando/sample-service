@@ -11,6 +11,7 @@ type ValueKeyType string
 const (
 	CtxKey      ValueKeyType = "CTX-KEY"
 	CtxValueKey ValueKeyType = "CTX-VALUE-KEY"
+	IsTxError   ValueKeyType = "IS-TX-ERROR"
 )
 
 type Committer interface {
@@ -69,6 +70,11 @@ func TryGetTxFromContext(ctx context.Context) (Committer, bool) {
 	}
 
 	return ctxVal.Tx, true
+}
+
+func GetLogger(ctx context.Context) *slog.Logger {
+	val, _ := tryGetValueFromContext(ctx)
+	return val.Logger
 }
 
 func SetTx(ctx context.Context, tx Committer) {

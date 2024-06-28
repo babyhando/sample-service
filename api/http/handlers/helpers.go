@@ -4,6 +4,7 @@ import (
 	"context"
 	"errors"
 	"service/pkg/jwt"
+	"service/pkg/valuecontext"
 	"service/service"
 
 	"github.com/gofiber/fiber/v2"
@@ -21,6 +22,9 @@ func SendError(c *fiber.Ctx, err error, status int) error {
 	if status == 0 {
 		status = fiber.StatusInternalServerError
 	}
+
+	c.Locals(valuecontext.IsTxError, err)
+
 	return c.Status(status).JSON(map[string]any{
 		"error_msg": err.Error(),
 	})

@@ -59,7 +59,8 @@ func registerOrderRoutes(router fiber.Router, app *service.AppContainer, secret 
 		middlerwares.SetTransaction(adapter.NewGormCommiter(app.RawRBConnection())),
 		middlerwares.Auth(secret),
 		userRoleChecker(),
-		handlers.CreateUserOrder(app.OrderServiceFromCtx))
+		handlers.CreateUserOrder(app.OrderServiceFromCtx),
+	)
 }
 
 func userRoleChecker() fiber.Handler {

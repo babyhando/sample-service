@@ -25,9 +25,24 @@ func SetTransaction(commiter valuecontext.Committer) fiber.Handler {
 		cm := commiter.Begin()
 		valuecontext.SetTx(c.UserContext(), cm)
 
-		c.Next()
+		logger := valuecontext.GetLogger(c.UserContext())
+
+		logger.Info("starting transaction")
+		if err := c.Next(); err != nil {
+			logger.Info("rollback on error", "error", err.Error())
+			cm.Rollback()
+			return err
+		}
+
+		err, ok := c.Locals(valuecontext.IsTxError).(error)
+		if ok && err != nil {
+			logger.Info("rollback on not ok response", "error", err.Error())
+			cm.Rollback()
+			return nil
+		}
 
 		if err := cm.Commit(); err != nil {
+			logger.Info("commit error", "err", err.Error())
 			cm.Rollback()
 			return err
 		}
